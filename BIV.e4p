@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric5 project file for project BIV -->
-<!-- Saved: 2014-09-01, 15:08:26 -->
+<!-- Saved: 2014-09-09, 14:37:29 -->
 <!-- Copyright (C) 2014 Carolina Rodriguez,  -->
 <Project version="5.1">
   <Language>en_US</Language>
@@ -15,7 +15,8 @@
   <Eol index="-1"/>
   <Sources>
     <Source>__init__.py</Source>
-    <Source>scr/scripts/start.py</Source>
+    <Source>scr/scripts/combined_effs.py</Source>
+    <Source>scr/module/drug/__init__.py</Source>
   </Sources>
   <Forms/>
   <Translations/>
