@@ -24,29 +24,34 @@ nplids_list = ['19351204000012', '19651117000025']
 
 def subtns_list (nplids_list):
     """A dict where the keys are the nplids and the values are the substances they contain"""
-    subs = {}
+    result = {}
     for id in nplids_list:
-        subs [id] = drug.Drug (database_obj, id).substances()
-    return subs
-
-def search_subtns(subtns):
-    """Search in the substances index file for the nplid that contain the substances in subtn_list.
-    The input can be a list or a dict where the keys are nplids and the values are substances"""
+        result [id] = drug.Drug (database_obj, id).substances()
+    return result
+    
+def containing_products(substances):
+    """Given a list of substances it returns a dictionary with values that are nplids of products that 
+    contain that substance"""
+    assert isinstance (substances, list)
+    result = {}
     with open (os.path.join(database_obj.index_path, 'substances_index.py'),'r') as f:
         output = ast.literal_eval (f.read())
-        if isinstance (subtns,  dict):
-            result_dict = {}
-            for k, value in subtns.iteritems():
-                subdict = {}
-                for v in value:
-                    subdict [v] = [output.get (v)]
-                result_dict [k] = [subdict]
-            return result_dict
-        elif isinstance (subtns,  dict):
-            list_result = [output.get (id) for sub in subtns]
-            return list_result
-        else:
-            return None
+        for sub in substances:
+            result [sub] = output.get (sub)
+    return result
+
+def search_sibling_prod(nplid_subs_dict):
+    """Input a dictionary with key 'nplid' and values that are a list with contained substances, 
+    each substance becomes a key in a subdict with values that are lists with product which contain 
+    that substance"""
+    result = {}
+    for k, value in nplid_subs_dict.iteritems():
+        subdict = {}
+        for v in value:
+            cont_prod = containing_products ([v])
+            subdict [v]= cont_prod [v]
+        result [k]=  subdict
+    return result
 
 def find_match_ue (nplid_list):
     """finds corresponding drugs in the ue database if existent """
@@ -71,7 +76,8 @@ def undesired_effs(nplids_list,  key):
 substanser = subtns_list (nplids_list)
 print substanser
 
-leta_substanser = search_subtns (substanser)
+leta_substanser = search_sibling_prod (substanser)
+print leta_substanser
 
 hitta_i_ue = find_match_ue (leta_substanser)
 print hitta_i_ue

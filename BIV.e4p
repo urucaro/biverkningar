@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric5 project file for project BIV -->
-<!-- Saved: 2014-09-09, 14:37:29 -->
+<!-- Saved: 2014-09-29, 14:25:08 -->
 <!-- Copyright (C) 2014 Carolina Rodriguez,  -->
 <Project version="5.1">
   <Language>en_US</Language>
@@ -17,6 +17,7 @@
     <Source>__init__.py</Source>
     <Source>scr/scripts/combined_effs.py</Source>
     <Source>scr/module/drug/__init__.py</Source>
+    <Source>scr/scripts/maintain_db.py</Source>
   </Sources>
   <Forms/>
   <Translations/>
