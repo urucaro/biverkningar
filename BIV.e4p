@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric5 project file for project BIV -->
-<!-- Saved: 2014-09-29, 14:25:08 -->
+<!-- Saved: 2014-10-10, 16:19:36 -->
 <!-- Copyright (C) 2014 Carolina Rodriguez,  -->
 <Project version="5.1">
   <Language>en_US</Language>
@@ -15,15 +15,23 @@
   <Eol index="-1"/>
   <Sources>
     <Source>__init__.py</Source>
-    <Source>scr/scripts/combined_effs.py</Source>
-    <Source>scr/module/drug/__init__.py</Source>
-    <Source>scr/scripts/maintain_db.py</Source>
+    <Source>src/modules/biv/__init__.py</Source>
+    <Source>src/scripts/index.py</Source>
+    <Source>src/scripts/maintain_db.py</Source>
+    <Source>src/scripts/search.py</Source>
+    <Source>src/scripts/combined_effs.py</Source>
+    <Source>src/app/biv.wsgi.py</Source>
+    <Source>tpl/firstpage.tpl</Source>
+    <Source>tpl/mystyle.css</Source>
+    <Source>tpl/search.tpl</Source>
   </Sources>
   <Forms/>
   <Translations/>
   <Resources/>
   <Interfaces/>
-  <Others/>
+  <Others>
+    <Other>tpl/search.tpl</Other>
+  </Others>
   <Vcs>
     <VcsType>None</VcsType>
   </Vcs>

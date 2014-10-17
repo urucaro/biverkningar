@@ -1,3 +1,6 @@
 data/*
-bld/model/mySeries-0.1*
-.sconsign.*
+src/test/*
+bld/model/Biv*
+bld/model/.*
+bld/model/SystemAssembler.log
+

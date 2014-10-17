@@ -3,7 +3,7 @@
 
 import argparse
 import os
-import ast
+from ast import literal_eval
 from pprint import pprint
 
 
@@ -18,10 +18,12 @@ class Environment (object):
         """Create an environment based on the prefix 'p'"""
         assert os.path.isdir (p)
         self.prefix = p
-        self.index_path = os.path.join (self.prefix, 'index')
-        self.products_path = os.path.join (self.prefix, 'products')
-        self.ue_path = os.path.join (self.prefix, 'ue')
-        self.conf = Configuration(self.prefix)
+        self.data_path = os.path.join (self.prefix, 'data')
+        self.index_path = os.path.join (self.data_path,'index')
+        self.products_path = os.path.join (self.data_path,'products')
+        self.ue_path = os.path.join (self.data_path,'ue')
+        self.db_xap_path = os.path.join (self.data_path,'db-xap')
+        self.conf = Configuration (self.prefix)
 
 
 class Database (object):
@@ -31,9 +33,11 @@ class Database (object):
         assert os.path.isdir (x)
         self.env = Environment (x)
         self.basepath = self.env.prefix
+        self.data_path = self.env.data_path
         self.index_path = self.env.index_path
         self.products_path = self.env.products_path
         self.ue_path = self.env.ue_path
+        self.db_xap_path = self.env.db_xap_path
         self.ue_match = None
         self.subs_nplids_dict = {}
         self.subs_nplids_dict = {}
@@ -50,22 +54,6 @@ class Database (object):
         fn = os.path.join (self.products_path,  '%s.py' %id)
         status = os.path.isfile (fn)
         return status
-
-    def load_ue_matches (self):
-        """A dictionary with all the nplids (key) in 'products' database that can be found in the
-        'ue' database with product names (value)"""
-        if not self.ue_match:
-            result = {}            
-            for n in os.listdir (self.ue_path):
-                ue_filename = os.path.join (self.ue_path, '%s' %n)
-                with file (ue_filename) as f:
-                    body = ast.literal_eval (f.read ())
-                if '__nplids' in body:
-                    nplids = body.get('__nplids', {})
-                    for k in nplids:
-                        result [k] = n
-            self.ue_match = result
-        return self.ue_match
 
     def drug (self,  id):
         """Returns an instance of the class 'Drug' with nplid 'id' """
@@ -89,8 +77,8 @@ class Drug (object):
         """reads data"""
         with file (self.product_fn)  as f:
             body = f.read ()
-            self._data_prod = ast.literal_eval (body)
-        
+            self._data_prod = literal_eval (body)
+
     def store (self):
         with open (self.product_fn,'w') as f:
             pprint (self._data_prod,  stream = f)
@@ -103,39 +91,47 @@ class Drug (object):
     def substances (self):
         """A list with the active substance for a given drug with nplid 'id' """
         result = []
-        for k in self._data_prod.get ('ingredients', {}):
-            result.append (self._data_prod.get ('ingredients', {}).get (k,  {}).get ('substance',  {}))
+        ingredients = self._data_prod.get ('ingredients', {})
+        for ingredient in ingredients:
+            result.append (self._data_prod.get ('ingredients', {}).get (ingredient,  {}).get ('substance',  {}))
         return result
 
-    def siblings (self):
+    def index_siblings (self):
         """Returns a dictionary with the keys being the contained substances and the values the products
-        (siblings) that contain that substance"""
+        (siblings) that contain that substance,requires that the 'substances_index.py' file has been created"""
         result = {}
         global substances_index
         if not substances_index: 
             with open (os.path.join (self.index_path, 'substances_index.py'),'r') as f:
-                substances_index = ast.literal_eval (f.read())
+                substances_index = literal_eval (f.read())
         for sub in self.substances():
             result [sub] = substances_index.get (sub)
         return result
 
-#    def ue_match (self):
-#        """returns the corresponding file in the 
-#        undesired effects (ue) database if it exist, else returns None"""
-#        ue_filename = ''
-#        ue_basename = self.db_obj.load_ue_matches ().get (self.id)#Fråga far: Är det ok att sätta ett nytt namn på en dict som redan finns?dvs. skall men undvika att ta upp en massa plats med olika variabler som innhåller samma data
-#        if ue_basename:
-#            ue_filename = os.path.join (self.ue_path,  ue_basename)
-#        return ue_filename
+    def write_siblings (self):
+        siblings = self.index_siblings () 
+        self._data_prod ['siblings'] = siblings 
+        self.store ()
+
+    def get_siblings (self):
+        """Fetch the key 'siblings' from the products db """
+        result = self._data_prod.get ('siblings', '')
+        return result
+        
+    def document_id (self):
+        """Get the key 'doc-id' if existent in products db """
+        result = self._data_prod.get ('doc-id', '')
+        return result
 
     def undesired_effs (self, key):
         """A list with known undesired effects for drug with nplid 'id' 
         listed in the 'ue' database. 'key' is i.e. common, rare, all etc."""
-        result = None
-        ue_filename = self.ue_match_fn () #returns a filename if there is a match in 'ue'
-        if ue_filename:
-            with os.path.join (self.ue_path,  ue_filename) as f:
-                body = ast.literal_eval (f.read) 
+        doc_id = self.document_id ()
+        
+        if doc_id:
+            filepath = os.path.join (self.ue_path, doc_id + '.py')
+            with file (filepath) as f:
+                body = literal_eval (f.read ())
                 uneffs = body.get ('_data', '')
                 if uneffs:
                     uneffs_dict = dict (uneffs)
@@ -146,6 +142,8 @@ class Drug (object):
                     result = uneffs_dict.get (fixed_key, '')
                     if not result:
                         result = 'There are no %s undesired effects' %key
+        else:
+            result = None
         return result
 
     def pharmform_dose (self):
@@ -155,34 +153,10 @@ class Drug (object):
         result = pharmform, dose
         return result
 
-
-
-
-
-
-
-#def init_subs (prefix):
-#    """Creates a dictionary where the keys are substances and the values are 
-#    the products (nplids) that contain that substance"""
-#    count = 0
-#    db = Database (prefix)
-#    subs_nplids = {}
-#    for f in os.listdir (db.products_path):
-#        current_nplid = os.path.splitext (f)[0]
-#        current_drug = Drug(db, current_nplid)
-#        current_subs = current_drug.substances()
-#        for sub in current_subs:
-#            if not sub in subs_nplids:
-#               subs_nplids [sub] =[]
-#            subs_nplids [sub] += [current_nplid]
-#        count += 1
-#        print count
-#    subs_nplids
-#    with open (os.path.join (db.index_path, 'substances_index.py'), 'wt') as out:
-##        out.write (str(subs_nplids))
-#        pprint(subs_nplids, stream=out)
     
-
+class UE (object):
+    def __init__ (self, drug_obj):
+        pass
 
 #-----------------------------------------------------------------------------------------------------------
 if __name__=='__main__':#gör att det bara körs om det är huvudprogrammet
@@ -206,16 +180,18 @@ if __name__=='__main__':#gör att det bara körs om det är huvudprogrammet
     if args.command =='test':
         if args.nplid:
             try:
-                substances = database.drug(args.nplid).substances()
-                match = database.drug(args.nplid).ue_match_fn()
-                effects = database.drug(args.nplid).undesired_effs('common')
-                form = database.drug(args.nplid).pharmform_dose()
-                match_dict = database.load_ue_match()
-        
+                drug_obj = database.drug(args.nplid)
+                
+                substances = drug_obj.substances()
+                effects = drug_obj.undesired_effs('common')
+                form = drug_obj.pharmform_dose()
+                siblings = drug_obj.get_siblings ()
+                doc = drug_obj.get_siblings ()
+                
                 print substances
-                print match
                 print effects
                 print form
+                print siblings
             except AssertionError:
                 print 'There is no drug with that nplid'
     elif args.command == 'init-subs':

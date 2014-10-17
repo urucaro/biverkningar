@@ -1,0 +1,36 @@
+#!/usr/bin/python
+# -*- coding: iso-8859-1 -*-
+####################################################################
+# Description: SCons configuration file for Drugle using new SystemAssembler tool
+# Authors: Paul Cohen
+# Copyright: Copyright (c) 2010, Seibo Software Studios AB
+# $Date: $
+# $Revision: $
+# $HeadURL: $
+# $LastChangedBy: $
+####################################################################
+
+import os
+
+# Create a SCons environment with the SystemAssembler tool
+env = Environment(ENV = os.environ, tools = ['default', 'SystemAssembler'])
+env.Append (arguments = ARGUMENTS)
+
+system_name = "Biv-0.1"
+system_target = env.Dir (system_name)
+env.SystemAssemble (system_target, "model.sas")
+env.Zip (system_name + ".zip", system_name)
+# Set TARFLAGS to create a gzip-filtered archive.
+env = Environment(TARFLAGS = '-c -z')
+env.Tar(system_name + ".tar.gz", system_name)
+
+Help("""
+For a full compilation of all Biv targets, type:
+
+  'scons'
+
+To view the dependency tree for all the targets, type:
+
+  'scons --tree=all'
+
+""")

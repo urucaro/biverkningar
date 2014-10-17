@@ -1,2 +1,7 @@
 data/*
+src/test/*
+src/modules/build/*
+bld/model/Biv*
+bld/model/.*
+bld/model/SystemAssembler.log
 

@@ -1,0 +1,16 @@
+body {
+    background-image: url("vallmo.jpg");
+    background-repeat: no-repeat;
+    background-position: right top;
+    margin-right: 1200px;
+}
+
+h1 {
+    color: orange;
+    text-align: center;
+}
+
+p {
+    font-family: "Times New Roman";
+    font-size: 20px;
+}
